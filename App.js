@@ -1,82 +1,66 @@
-import { StatusBar } from 'expo-status-bar';
-import React, {Component}  from 'react';
+import React from 'react';
+import { StyleSheet, Text, View, Alert, Image } from 'react-native';
+import Weather from "./Weather"
+import * as Location from "expo-location"
+import imoti from './assets/e6.png'
 
-
-export default class App extends Component {
+export default class App extends React.Component {
   constructor(){
-    super();
-  }
+    super();    
+  } 
+
   state = {
-    newToDo: ""
+    isLoaded: true
+  }  
+  getLocation = async() => {
+    
+    try{
+      let {status} = await Location.requestPermissionsAsync();
+      if(status != 'granted') {
+        console.log('access denied!!')
+      }
+      
+      let location = await Location.getCurrentPositionAsync();
+      console.log(location);
+    }catch(error){
+      Alert.alert("title", "cannot find you");
+    }
+  };
+
+  componentDidMount(){
+    this.getLocation();
   }
   render(){
-    const{newToDo}=this.state;
+    const {isLoaded}=this.state;
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="Light-Content" />
-        <Text style={styles.title}>To Do List</Text>
-        <View style={styles.card}>
-          <TextInput 
-            style={styles.input} 
-            placeholder={"new to do item"} 
-            value={newToDo} 
-            onChangeText={this._controlNewToDo}
-            placeholderTextColor={"#999"}
-            returnKeyType={"done"}
-            autoCorrect={false}
-          />
-          <ScrollView>
-            <ToDo/>
-          </ScrollView>
-        </View>
+        {isLoaded ? (
+          <Weather />
+        ) : (
+          <View style={styles.loading}>
+            <Image source={{uri:"https://i.imgur.com/TkIrScD.png"}} style={{width:300, height:150}}/>
+            <Image source={imoti} style={{width:300, height:300}}/>
+            <Text style={styles.loadingText}>날씨 정보를 받아오는 중입니다.</Text>
+          </View>
+        )}
       </View>
     );
-  }
-  _controlNewToDo = text =>{
-    this.setState({
-      newToDo:text
-    })
   }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f23657',
-    alignItems: 'center'
+    backgroundColor: '#fff'
   },
-  title:{
-    color: "white",
-    fontSize: 30,
-    marginTop:50,
-    fontWeight:"200",
-    marginBottom: 30
+  loading : {
+    flex:1,
+    backgroundColor:"#FDF6AA",
+    justifyContent:"flex-end",
+    paddingLeft:25
   },
-  card:{
-    backgroundColor:"white",
-    flex : 1,
-    width : width - 25,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    ...Platform.select({
-      ios:{
-        shadowColor:"rgb(50,50,50)",
-        shadowOpacity:0.5,
-        shadowRadius:5,
-        shadowOffset:{
-          height:-1,
-          width:0
-        }
-      },
-      android:{
-        elevation:5
-      }
-    })
-  },
-  input:{
-    padding:20,
-    borderBottomColor:"#bbb",
-    borderBottomWidth:1,
-    fontSize:25
-  },
+  loadingText:{
+    fontSize : 38,
+    marginBottom:100
+  }
 });
